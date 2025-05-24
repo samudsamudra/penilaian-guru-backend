@@ -29,7 +29,7 @@ Kepala sekolah menilai melalui dashboard penilaian terintegrasi.
 ---
 
 ## 📂 Struktur Folder
-
+```
 penilaian_guru/
 ├── controllers/
 ├── services/
@@ -40,6 +40,7 @@ penilaian_guru/
 ├── config/
 ├── main.go
 └── .env
+```
 ---
 
 ## 🛠️ Setup
