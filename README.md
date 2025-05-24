@@ -44,7 +44,7 @@ penilaian_guru/
 ---
 
 ## 🛠️ Setup
-
+```
 cp .env.example .env
 go mod tidy
 go run main.go
@@ -54,6 +54,6 @@ GET	/ping	Cek server aktif
 GET	/auth/google/login	Login guru via Google
 GET	/auth/google/callback	Callback login
 POST	/guru/video	Submit video (butuh token)
-
+```
 ✨ Dev: Capellio Samudra
 Made with Julian JJK
