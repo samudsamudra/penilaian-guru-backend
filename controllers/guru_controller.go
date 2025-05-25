@@ -162,3 +162,65 @@ func GetAllVideoHandler(c *gin.Context, db *gorm.DB) {
 		"data":    videos,
 	})
 }
+
+func GetVideoDetailHandler(c *gin.Context, db *gorm.DB) {
+	guruID := c.MustGet("userID").(uuid.UUID)
+	videoIDStr := c.Param("id")
+
+	videoID, err := uuid.Parse(videoIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID tidak valid"})
+		return
+	}
+
+	video, err := services.GetVideoByID(db, guruID, videoID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Video tidak ditemukan atau bukan milikmu"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Detail video ditemukan",
+		"data": gin.H{
+			"video_id":         video.ID,
+			"link":             video.Link,
+			"mata_pelajaran":   video.MataPelajaran,
+			"kelas_semester":   video.KelasSemester,
+			"hari_tanggal":     video.HariTanggal,
+			"kompetensi_dasar": video.KompetensiDasar,
+			"indikator":        video.Indikator,
+			"updated_at":       video.UpdatedAt,
+		},
+	})
+}
+
+func GetPenilaianDetailHandler(c *gin.Context, db *gorm.DB) {
+	guruID := c.MustGet("userID").(uuid.UUID)
+	videoIDStr := c.Param("id")
+
+	videoID, err := uuid.Parse(videoIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID tidak valid"})
+		return
+	}
+
+	result, err := services.GetPenilaianDetailByVideoID(db, guruID, videoID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "Video ini belum dinilai",
+			"data":    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Penilaian ditemukan",
+		"data": gin.H{
+			"label":        result.Label,
+			"catatan":      result.Catatan,
+			"saran":        result.Saran,
+			"kepsek_nama":  result.KepsekNama,
+			"dinilai_pada": result.DinilaiPada,
+		},
+	})
+}

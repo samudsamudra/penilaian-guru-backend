@@ -218,3 +218,44 @@ func GetAllVideosWithStatus(db *gorm.DB, guruID uuid.UUID) ([]VideoListItem, err
 	}
 	return results, nil
 }
+
+func GetVideoByID(db *gorm.DB, guruID, videoID uuid.UUID) (*models.VideoSubmission, error) {
+	var video models.VideoSubmission
+
+	err := db.Where("id = ? AND guru_id = ?", videoID, guruID).First(&video).Error
+	if err != nil {
+		return nil, err
+	}
+	return &video, nil
+}
+
+type PenilaianDetail struct {
+	Label       string
+	Catatan     string
+	Saran       string
+	KepsekNama  string
+	DinilaiPada time.Time
+}
+
+func GetPenilaianDetailByVideoID(db *gorm.DB, guruID, videoID uuid.UUID) (*PenilaianDetail, error) {
+	var result PenilaianDetail
+
+	err := db.Table("penilaians").
+		Select(`
+			penilaians.label,
+			penilaians.catatan,
+			penilaians.saran,
+			kepsek.name as kepsek_nama,
+			penilaians.created_at as dinilai_pada
+		`).
+		Joins("JOIN video_submissions ON penilaians.video_id = video_submissions.id").
+		Joins("JOIN users kepsek ON penilaians.kepsek_id = kepsek.id").
+		Where("penilaians.video_id = ? AND video_submissions.guru_id = ?", videoID, guruID).
+		Scan(&result).Error
+
+	if err != nil || result.KepsekNama == "" {
+		return nil, errors.New("Video ini belum dinilai oleh kepala sekolah")
+	}
+
+	return &result, nil
+}
