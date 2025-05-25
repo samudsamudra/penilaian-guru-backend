@@ -132,3 +132,18 @@ func PatchVideoByIDHandler(c *gin.Context, db *gorm.DB) {
 		"data":    video,
 	})
 }
+
+func GetPenilaianHandler(c *gin.Context, db *gorm.DB) {
+	guruID := c.MustGet("userID").(uuid.UUID)
+
+	results, err := services.GetPenilaianGuru(db, guruID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil penilaian"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Daftar penilaian ditemukan",
+		"data":    results,
+	})
+}

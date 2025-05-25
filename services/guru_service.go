@@ -150,3 +150,38 @@ func PatchVideoByID(db *gorm.DB, guruID, videoID uuid.UUID, req dto.PatchVideoRe
 	video.UpdatedAt = time.Now()
 	return &video, db.Save(&video).Error
 }
+
+type PenilaianGuruResponse struct {
+	VideoID    uuid.UUID
+	Link       string
+	SkorTotal  int
+	Label      string
+	Catatan    string
+	Saran      string
+	KepsekNama string
+}
+
+func GetPenilaianGuru(db *gorm.DB, guruID uuid.UUID) ([]PenilaianGuruResponse, error) {
+	var results []PenilaianGuruResponse
+
+	err := db.Table("penilaians").
+		Select(`
+			penilaians.video_id,
+			video_submissions.link,
+			penilaians.skor_total,
+			penilaians.label,
+			penilaians.catatan,
+			penilaians.saran,
+			users.name as kepsek_nama
+		`).
+		Joins("JOIN video_submissions ON penilaians.video_id = video_submissions.id").
+		Joins("JOIN users ON users.id = penilaians.kepsek_id").
+		Where("video_submissions.guru_id = ?", guruID).
+		Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
