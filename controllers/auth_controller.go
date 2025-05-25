@@ -78,8 +78,13 @@ func GoogleCallback(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	// Redirect dengan token dan nama user
-	redirectURL := fmt.Sprintf("http://localhost:3000?token=%s&name=%s", tokenString, url.QueryEscape(user.Name))
+	// Redirect dengan token, nama user, dan role
+	redirectURL := fmt.Sprintf(
+		"http://localhost:3000?token=%s&name=%s&role=%s",
+		tokenString,
+		url.QueryEscape(user.Name),
+		user.Role,
+	)
 	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
 }
 
