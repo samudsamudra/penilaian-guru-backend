@@ -116,3 +116,45 @@ func GetMeHandler(c *gin.Context, db *gorm.DB) {
         },
     })
 }
+
+type LoginRequest struct {
+    Email    string `json:"email" binding:"required,email"`
+    Password string `json:"password" binding:"required"`
+}
+
+func KepsekLoginHandler(c *gin.Context, db *gorm.DB) {
+    var req LoginRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Format login tidak valid"})
+        return
+    }
+
+    user, err := services.GetUserByEmail(db, req.Email)
+    if err != nil || user.Role != "kepsek" {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Akun tidak ditemukan atau bukan kepsek"})
+        return
+    }
+
+    if !utils.CheckPasswordHash(req.Password, user.Password) {
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Password salah"})
+        return
+    }
+
+    token, err := utils.GenerateJWT(user.ID, user.Role)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal membuat token"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Login kepsek berhasil",
+        "token":   token,
+        "user": gin.H{
+            "id":      user.ID,
+            "email":   user.Email,
+            "name":    user.Name,
+            "role":    user.Role,
+            "sekolah": user.Sekolah,
+        },
+    })
+}

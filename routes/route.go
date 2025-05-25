@@ -30,8 +30,26 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB) {
         controllers.GetMeHandler(c, db)
     })
 
+    r.POST("/auth/kepsek/login", func(c *gin.Context) {
+        controllers.KepsekLoginHandler(c, db)
+    })
+
     r.GET("/auth/google/login", controllers.GoogleLogin)
     r.GET("/auth/google/callback", func(c *gin.Context) {
         controllers.GoogleCallback(c, db)
     })
+
+    kepsek := r.Group("/kepsek")
+    kepsek.Use(middlewares.AuthMiddleware())
+    {
+        kepsek.GET("/submissions", func(c *gin.Context) {
+            controllers.GetSubmissionsByKepsekHandler(c, db)
+        })
+        kepsek.POST("/nilai", func(c *gin.Context) {
+            controllers.PostPenilaianHandler(c, db)
+        })
+        kepsek.PATCH("/nilai/:video_id", func(c *gin.Context) {
+            controllers.PatchPenilaianHandler(c, db)
+        })
+    }
 }
