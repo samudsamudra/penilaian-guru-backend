@@ -2,8 +2,10 @@ package controllers
 
 import (
 	"net/http"
+	"penilaian_guru/dto"
 	"penilaian_guru/services"
 
+	// Added import
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -27,7 +29,7 @@ func SubmitVideoHandler(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	submission, err := services.UpsertVideoSubmission(
+	submission, err := services.CreateVideoSubmission(
 		db,
 		guruID,
 		req.Link,
@@ -80,5 +82,53 @@ func GetMyVideoHandler(c *gin.Context, db *gorm.DB) {
 			"indikator":         video.Indikator,
 			"updated_at":        video.UpdatedAt,
 		},
+	})
+}
+
+func PatchVideoHandler(c *gin.Context, db *gorm.DB) {
+	guruID := c.MustGet("userID").(uuid.UUID)
+
+	var req dto.PatchVideoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Format data tidak valid"})
+		return
+	}
+
+	video, err := services.PatchVideoMetadata(db, guruID, req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Metadata video berhasil diperbarui",
+		"data":    video,
+	})
+}
+
+func PatchVideoByIDHandler(c *gin.Context, db *gorm.DB) {
+	guruID := c.MustGet("userID").(uuid.UUID)
+	videoIDParam := c.Param("video_id")
+	videoID, err := uuid.Parse(videoIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID video tidak valid"})
+		return
+	}
+
+	var req dto.PatchVideoRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Format data tidak valid"})
+		return
+	}
+
+	video, err := services.PatchVideoByID(db, guruID, videoID, req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Metadata video berhasil diperbarui",
+		"data":    video,
 	})
 }

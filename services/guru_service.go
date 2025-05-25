@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+	"penilaian_guru/dto"
 	"penilaian_guru/models"
 	"time"
 
@@ -64,4 +66,87 @@ func GetVideoByGuruID(db *gorm.DB, guruID uuid.UUID) (*models.VideoSubmission, e
 		return nil, err
 	}
 	return &submission, nil
+}
+
+func PatchVideoMetadata(db *gorm.DB, guruID uuid.UUID, req dto.PatchVideoRequest) (*models.VideoSubmission, error) {
+	var video models.VideoSubmission
+	err := db.Where("guru_id = ?", guruID).First(&video).Error
+	if err != nil {
+		return nil, errors.New("Video belum dikirim, tidak bisa diupdate")
+	}
+
+	if req.MataPelajaran != "" {
+		video.MataPelajaran = req.MataPelajaran
+	}
+	if req.KelasSemester != "" {
+		video.KelasSemester = req.KelasSemester
+	}
+	if req.HariTanggal != "" {
+		video.HariTanggal = req.HariTanggal
+	}
+	if req.KompetensiDasar != "" {
+		video.KompetensiDasar = req.KompetensiDasar
+	}
+	if req.Indikator != "" {
+		video.Indikator = req.Indikator
+	}
+
+	video.UpdatedAt = time.Now()
+	err = db.Save(&video).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &video, nil
+}
+
+func CreateVideoSubmission(
+	db *gorm.DB,
+	guruID uuid.UUID,
+	link, mataPelajaran, kelasSemester, hariTanggal, kompetensiDasar, indikator string,
+) (*models.VideoSubmission, error) {
+	submission := models.VideoSubmission{
+		ID:               uuid.New(),
+		GuruID:           guruID,
+		Link:             link,
+		MataPelajaran:    mataPelajaran,
+		KelasSemester:    kelasSemester,
+		HariTanggal:      hariTanggal,
+		KompetensiDasar:  kompetensiDasar,
+		Indikator:        indikator,
+		CreatedAt:        time.Now(),
+		UpdatedAt:        time.Now(),
+	}
+
+	if err := db.Create(&submission).Error; err != nil {
+		return nil, err
+	}
+	return &submission, nil
+}
+
+func PatchVideoByID(db *gorm.DB, guruID, videoID uuid.UUID, req dto.PatchVideoRequest) (*models.VideoSubmission, error) {
+	var video models.VideoSubmission
+	err := db.Where("id = ? AND guru_id = ?", videoID, guruID).First(&video).Error
+	if err != nil {
+		return nil, errors.New("Video tidak ditemukan atau bukan milikmu")
+	}
+
+	if req.MataPelajaran != "" {
+		video.MataPelajaran = req.MataPelajaran
+	}
+	if req.KelasSemester != "" {
+		video.KelasSemester = req.KelasSemester
+	}
+	if req.HariTanggal != "" {
+		video.HariTanggal = req.HariTanggal
+	}
+	if req.KompetensiDasar != "" {
+		video.KompetensiDasar = req.KompetensiDasar
+	}
+	if req.Indikator != "" {
+		video.Indikator = req.Indikator
+	}
+
+	video.UpdatedAt = time.Now()
+	return &video, db.Save(&video).Error
 }

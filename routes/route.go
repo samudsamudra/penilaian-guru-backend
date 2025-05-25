@@ -24,6 +24,12 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB) {
         guru.GET("/video", func(c *gin.Context) {
             controllers.GetMyVideoHandler(c, db)
         })
+        guru.PATCH("/video", func(c *gin.Context) {
+            controllers.PatchVideoHandler(c, db)
+        })
+        guru.PATCH("/video/:video_id", func(c *gin.Context) {
+            controllers.PatchVideoByIDHandler(c, db)
+        })
     }
 
     r.GET("/me", middlewares.AuthMiddleware(), func(c *gin.Context) {
