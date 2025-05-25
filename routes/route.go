@@ -26,6 +26,10 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB) {
         })
     }
 
+    r.GET("/me", middlewares.AuthMiddleware(), func(c *gin.Context) {
+        controllers.GetMeHandler(c, db)
+    })
+
     r.GET("/auth/google/login", controllers.GoogleLogin)
     r.GET("/auth/google/callback", func(c *gin.Context) {
         controllers.GoogleCallback(c, db)

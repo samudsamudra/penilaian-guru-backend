@@ -12,4 +12,5 @@ type User struct {
     CreatedAt time.Time
     UpdatedAt time.Time
     Submissions []VideoSubmission `gorm:"foreignKey:GuruID"`
+    FotoProfil string `gorm:"type:text"`
 }

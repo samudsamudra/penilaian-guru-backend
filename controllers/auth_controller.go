@@ -1,19 +1,20 @@
 package controllers
 
 import (
-    "context"
-    "net/http"
-    "os"
-    "penilaian_guru/services"
+	"context"
+	"net/http"
+	"os"
+	"penilaian_guru/services"
 
-    "penilaian_guru/utils"
+	"penilaian_guru/utils"
 
-    "github.com/gin-gonic/gin"
-    "golang.org/x/oauth2"
-    "golang.org/x/oauth2/google"
-    oauth2api "google.golang.org/api/oauth2/v2"
-    "google.golang.org/api/option"
-    "gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	oauth2api "google.golang.org/api/oauth2/v2"
+	"google.golang.org/api/option"
+	"gorm.io/gorm"
 )
 
 func getGoogleOAuthConfig() *oauth2.Config {
@@ -62,7 +63,7 @@ func GoogleCallback(c *gin.Context, db *gorm.DB) {
     }
 
     // Buat atau ambil user dari database
-    user, created, err := services.FindOrCreateUser(db, userinfo.Email, userinfo.Name)
+    user, created, err := services.FindOrCreateUser(db, userinfo.Email, userinfo.Name, userinfo.Picture)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal login / register user"})
         return
@@ -81,8 +82,37 @@ func GoogleCallback(c *gin.Context, db *gorm.DB) {
     }
 
     c.JSON(http.StatusOK, gin.H{
-        "message": msg,
-        "token":   tokenString,
-        "user":    user,
+        "message":    msg,
+        "token":      tokenString,
+        "user": gin.H{
+            "id":          user.ID,
+            "name":        user.Name,
+            "email":       user.Email,
+            "role":        user.Role,
+            "sekolah":     user.Sekolah,
+            "foto_profil": user.FotoProfil,
+        },
+    })
+}
+
+func GetMeHandler(c *gin.Context, db *gorm.DB) {
+    userID := c.MustGet("userID").(uuid.UUID)
+
+    user, err := services.GetUserByID(db, userID)
+    if err != nil {
+        c.JSON(http.StatusNotFound, gin.H{"error": "User tidak ditemukan"})
+        return
+    }
+
+    c.JSON(http.StatusOK, gin.H{
+        "message": "Data user ditemukan",
+        "user": gin.H{
+            "id":      user.ID,
+            "name":    user.Name,
+            "email":   user.Email,
+            "role":    user.Role,
+            "sekolah": user.Sekolah,
+            "foto_profil": user.FotoProfil,
+        },
     })
 }

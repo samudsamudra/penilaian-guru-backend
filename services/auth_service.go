@@ -1,13 +1,13 @@
 package services
 
 import (
-    "penilaian_guru/models"
+	"penilaian_guru/models"
 
-    "github.com/google/uuid"
-    "gorm.io/gorm"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
-func FindOrCreateUser(db *gorm.DB, email, name string) (*models.User, bool, error) {
+func FindOrCreateUser(db *gorm.DB, email, name, foto string) (*models.User, bool, error) {
     var user models.User
     err := db.Where("email = ?", email).First(&user).Error
     if err == nil {
@@ -23,10 +23,20 @@ func FindOrCreateUser(db *gorm.DB, email, name string) (*models.User, bool, erro
         Name:    name,
         Role:    "guru",
         Sekolah: "SMK Telkom Malang",
+        FotoProfil: foto,
     }
 
     if err := db.Create(&user).Error; err != nil {
         return nil, false, err
     }
     return &user, true, nil
+}
+
+func GetUserByID(db *gorm.DB, userID uuid.UUID) (*models.User, error) {
+    var user models.User
+    err := db.First(&user, "id = ?", userID).Error
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
 }
