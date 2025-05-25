@@ -87,6 +87,16 @@ func GoogleCallback(c *gin.Context, db *gorm.DB) {
 		true,            // httpOnly: true supaya FE gak bisa akses langsung dari JS
 	)
 
+    c.SetCookie(
+        "guruID",       // nama cookie
+        user.ID.String(), // isi user ID
+        3600,            // durasi (1 jam)
+        "/",             // path
+        "localhost",     // domain (sesuaikan kalau nanti pakai domain)
+        false,           // secure: false di localhost, true kalau HTTPS
+        true,            // httpOnly: true supaya FE gak bisa akses langsung dari JS
+    )
+
 	// Redirect ke dashboard FE
 	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000")
 }
