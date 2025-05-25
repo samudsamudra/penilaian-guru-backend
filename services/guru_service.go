@@ -154,7 +154,6 @@ func PatchVideoByID(db *gorm.DB, guruID, videoID uuid.UUID, req dto.PatchVideoRe
 type PenilaianGuruResponse struct {
 	VideoID    uuid.UUID
 	Link       string
-	SkorTotal  int
 	Label      string
 	Catatan    string
 	Saran      string
@@ -168,7 +167,6 @@ func GetPenilaianGuru(db *gorm.DB, guruID uuid.UUID) ([]PenilaianGuruResponse, e
 		Select(`
 			penilaians.video_id,
 			video_submissions.link,
-			penilaians.skor_total,
 			penilaians.label,
 			penilaians.catatan,
 			penilaians.saran,
