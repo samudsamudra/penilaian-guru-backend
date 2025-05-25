@@ -1,11 +1,12 @@
 package main
 
 import (
-    "penilaian_guru/config"
-    "penilaian_guru/models"
-    "penilaian_guru/routes"
+	"penilaian_guru/config"
+	"penilaian_guru/middlewares"
+	"penilaian_guru/models"
+	"penilaian_guru/routes"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -20,6 +21,7 @@ func main() {
 
     // Setup router
     r := gin.Default()
+    r.Use(middlewares.CORSMiddleware()) // Add CORS middleware
     routes.SetupRoutes(r, db)
 
     // Jalankan server di port 8080
