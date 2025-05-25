@@ -1,12 +1,12 @@
 package routes
 
 import (
-    "penilaian_guru/controllers"
+	"penilaian_guru/controllers"
 
-    "penilaian_guru/middlewares"
+	"penilaian_guru/middlewares"
 
-    "github.com/gin-gonic/gin"
-    "gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func SetupRoutes(r *gin.Engine, db *gorm.DB) {
@@ -20,6 +20,9 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB) {
         // Dummy: endpoint submit video
         guru.POST("/video", func(c *gin.Context) {
             controllers.SubmitVideoHandler(c, db)
+        })
+        guru.GET("/video", func(c *gin.Context) {
+            controllers.GetMyVideoHandler(c, db)
         })
     }
 

@@ -12,6 +12,13 @@ type VideoSubmission struct {
     CreatedAt time.Time
     UpdatedAt time.Time
 
+    MataPelajaran   string
+    KelasSemester   string
+    HariTanggal     string
+    KompetensiDasar string
+    Indikator       string
+
+
     Guru      User
     Penilaian Penilaian `gorm:"foreignKey:VideoID"`
 }
