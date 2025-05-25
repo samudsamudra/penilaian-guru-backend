@@ -2,9 +2,7 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"penilaian_guru/services"
 
@@ -78,14 +76,19 @@ func GoogleCallback(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	// Redirect dengan token, nama user, dan role
-	redirectURL := fmt.Sprintf(
-		"http://localhost:3000?token=%s&name=%s&role=%s",
-		tokenString,
-		url.QueryEscape(user.Name),
-		user.Role,
+	// Kirim token via Cookie
+	c.SetCookie(
+		"token",         // nama cookie
+		tokenString,     // isi token
+		3600,            // durasi (1 jam)
+		"/",             // path
+		"localhost",     // domain (sesuaikan kalau nanti pakai domain)
+		false,           // secure: false di localhost, true kalau HTTPS
+		true,            // httpOnly: true supaya FE gak bisa akses langsung dari JS
 	)
-	c.Redirect(http.StatusTemporaryRedirect, redirectURL)
+
+	// Redirect ke dashboard FE
+	c.Redirect(http.StatusTemporaryRedirect, "http://localhost:3000")
 }
 
 func GetMeHandler(c *gin.Context, db *gorm.DB) {

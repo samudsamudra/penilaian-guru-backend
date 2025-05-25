@@ -1,18 +1,26 @@
 package middlewares
 
 import (
-    "net/http"
-    "penilaian_guru/utils"
-    "strings"
+	"net/http"
+	"penilaian_guru/utils"
+	"strings"
 
-    "github.com/gin-gonic/gin"
-    "github.com/google/uuid"
-    "github.com/golang-jwt/jwt/v5"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 func AuthMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
         authHeader := c.GetHeader("Authorization")
+        if authHeader == "" {
+            //ambil dari cookie jekings
+            cookieToken, err := c.Cookie("token")
+            if err == nil {
+                authHeader = "Bearer " + cookieToken
+            }
+        }
+
         if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
             c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
             c.Abort()
