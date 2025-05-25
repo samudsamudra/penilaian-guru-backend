@@ -147,3 +147,18 @@ func GetPenilaianHandler(c *gin.Context, db *gorm.DB) {
 		"data":    results,
 	})
 }
+
+func GetAllVideoHandler(c *gin.Context, db *gorm.DB) {
+	guruID := c.MustGet("userID").(uuid.UUID)
+
+	videos, err := services.GetAllVideosWithStatus(db, guruID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Gagal mengambil data video"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Daftar video ditemukan",
+		"data":    videos,
+	})
+}

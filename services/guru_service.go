@@ -183,3 +183,38 @@ func GetPenilaianGuru(db *gorm.DB, guruID uuid.UUID) ([]PenilaianGuruResponse, e
 
 	return results, nil
 }
+
+type VideoListItem struct {
+	ID               uuid.UUID `json:"video_id"`
+	Link             string    `json:"link"`
+	MataPelajaran    string    `json:"mata_pelajaran"`
+	KelasSemester    string    `json:"kelas_semester"`
+	HariTanggal      string    `json:"hari_tanggal"`
+	StatusPenilaian  string    `json:"status_penilaian"`
+}
+
+func GetAllVideosWithStatus(db *gorm.DB, guruID uuid.UUID) ([]VideoListItem, error) {
+	var results []VideoListItem
+
+	err := db.Raw(`
+		SELECT
+			v.id,
+			v.link,
+			v.mata_pelajaran,
+			v.kelas_semester,
+			v.hari_tanggal,
+			CASE
+				WHEN p.id IS NOT NULL THEN 'Sudah dinilai'
+				ELSE 'Menunggu untuk dinilai'
+			END as status_penilaian
+		FROM video_submissions v
+		LEFT JOIN penilaians p ON p.video_id = v.id
+		WHERE v.guru_id = ?
+		ORDER BY v.created_at DESC
+	`, guruID).Scan(&results).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return results, nil
+}

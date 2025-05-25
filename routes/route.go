@@ -33,6 +33,9 @@ func SetupRoutes(r *gin.Engine, db *gorm.DB) {
         guru.GET("/penilaian", func(c *gin.Context) {
             controllers.GetPenilaianHandler(c, db)
         })
+        guru.GET("/videos", func(c *gin.Context) {
+            controllers.GetAllVideoHandler(c, db)
+        })
     }
 
     r.GET("/me", middlewares.AuthMiddleware(), func(c *gin.Context) {
