@@ -91,8 +91,9 @@ type PatchPenilaianRequest struct {
 
 func PatchPenilaianHandler(c *gin.Context, db *gorm.DB) {
 	kepsekID := c.MustGet("userID").(uuid.UUID)
-	videoIDParam := c.Param("video_id")
-	videoID, err := uuid.Parse(videoIDParam)
+
+	idStr := c.Param("video_id")
+	videoID, err := uuid.Parse(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID video tidak valid"})
 		return

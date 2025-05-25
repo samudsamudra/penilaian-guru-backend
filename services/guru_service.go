@@ -196,22 +196,22 @@ type VideoListItem struct {
 func GetAllVideosWithStatus(db *gorm.DB, guruID uuid.UUID) ([]VideoListItem, error) {
 	var results []VideoListItem
 
-	err := db.Raw(`
-		SELECT
-			v.id,
-			v.link,
-			v.mata_pelajaran,
-			v.kelas_semester,
-			v.hari_tanggal,
+	err := db.Model(&models.VideoSubmission{}).
+		Select(`
+			video_submissions.id,
+			video_submissions.link,
+			video_submissions.mata_pelajaran,
+			video_submissions.kelas_semester,
+			video_submissions.hari_tanggal,
 			CASE
 				WHEN p.id IS NOT NULL THEN 'Sudah dinilai'
 				ELSE 'Menunggu untuk dinilai'
 			END as status_penilaian
-		FROM video_submissions v
-		LEFT JOIN penilaians p ON p.video_id = v.id
-		WHERE v.guru_id = ?
-		ORDER BY v.created_at DESC
-	`, guruID).Scan(&results).Error
+		`).
+		Joins("LEFT JOIN penilaians p ON p.video_id = video_submissions.id").
+		Where("video_submissions.guru_id = ?", guruID).
+		Order("video_submissions.created_at DESC").
+		Scan(&results).Error
 
 	if err != nil {
 		return nil, err

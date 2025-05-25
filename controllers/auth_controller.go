@@ -135,16 +135,27 @@ func KepsekLoginHandler(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
+	key := req.Email // or use c.ClientIP()
+
+	if utils.IsBlocked(key) {
+		c.JSON(429, gin.H{"error": "jangan bruteforce pliss, tunggu beberapa saat lagi"})
+		return
+	}
+
 	user, err := services.GetUserByEmail(db, req.Email)
 	if err != nil || user.Role != "kepsek" {
+		utils.RegisterFail(key)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Akun tidak ditemukan atau bukan kepsek"})
 		return
 	}
 
 	if !utils.CheckPasswordHash(req.Password, user.Password) {
+		utils.RegisterFail(key)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Password salah"})
 		return
 	}
+
+	utils.ResetAttempts(key)
 
 	token, err := utils.GenerateJWT(user.ID, user.Role)
 	if err != nil {

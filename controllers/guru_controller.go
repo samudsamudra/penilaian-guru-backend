@@ -196,9 +196,9 @@ func GetVideoDetailHandler(c *gin.Context, db *gorm.DB) {
 
 func GetPenilaianDetailHandler(c *gin.Context, db *gorm.DB) {
 	guruID := c.MustGet("userID").(uuid.UUID)
-	videoIDStr := c.Param("id")
 
-	videoID, err := uuid.Parse(videoIDStr)
+	idStr := c.Param("id")
+	videoID, err := uuid.Parse(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID tidak valid"})
 		return
