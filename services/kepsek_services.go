@@ -12,14 +12,16 @@ import (
 )
 
 type GuruSubmission struct {
-	VideoID       uuid.UUID `json:"video_id"`
-	GuruNama      string
-	FotoProfil    string
-	Link          string
-	MataPelajaran string
-	KelasSemester string
-	HariTanggal   string
-	UpdatedAt     string
+	VideoID         uuid.UUID `json:"video_id"`
+	GuruNama        string
+	FotoProfil      string
+	Link            string
+	MataPelajaran   string
+	KelasSemester   string
+	HariTanggal     string
+	UpdatedAt       string
+	StatusPenilaian string `json:"status_penilaian"`
+	Label           string `json:"label"`
 }
 
 func GetSubmissionsBySekolah(db *gorm.DB, sekolah string) ([]GuruSubmission, error) {
@@ -34,8 +36,13 @@ func GetSubmissionsBySekolah(db *gorm.DB, sekolah string) ([]GuruSubmission, err
 		video_submissions.mata_pelajaran,
 		video_submissions.kelas_semester,
 		video_submissions.hari_tanggal,
-		video_submissions.updated_at`).
+		video_submissions.updated_at,
+		CASE
+			WHEN penilaians.id IS NOT NULL THEN 'Sudah dinilai'
+			ELSE 'Menunggu untuk dinilai'
+		END as status_penilaian`).
 		Joins("JOIN users ON users.id = video_submissions.guru_id").
+		Joins("LEFT JOIN penilaians ON penilaians.video_id = video_submissions.id").
 		Where("users.sekolah = ?", sekolah).
 		Scan(&results).Error
 
@@ -93,8 +100,10 @@ func GetSubmissionByVideoID(db *gorm.DB, videoID uuid.UUID) (*GuruSubmission, er
 			video_submissions.mata_pelajaran,
 			video_submissions.kelas_semester,
 			video_submissions.hari_tanggal,
-			video_submissions.updated_at`).
+			video_submissions.updated_at,
+			COALESCE(p.label, 'Menunggu untuk dinilai') as label`).
 		Joins("JOIN users ON users.id = video_submissions.guru_id").
+		Joins("LEFT JOIN penilaians p ON p.video_id = video_submissions.id").
 		Where("video_submissions.id = ?", videoID).
 		Scan(&result).Error
 
