@@ -10,64 +10,74 @@ import (
 )
 
 func SetupRoutes(r *gin.Engine, db *gorm.DB) {
-    r.GET("/ping", func(c *gin.Context) {
-        c.JSON(200, gin.H{"message": "pong"})
-    })
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "pong"})
+	})
 
-    guru := r.Group("/guru")
-    guru.Use(middlewares.AuthMiddleware())
-    {
-        // Dummy: endpoint submit video
-        guru.POST("/video", func(c *gin.Context) {
-            controllers.SubmitVideoHandler(c, db)
-        })
-        guru.GET("/video", func(c *gin.Context) {
-            controllers.GetMyVideoHandler(c, db)
-        })
-        guru.PATCH("/video", func(c *gin.Context) {
-            controllers.PatchVideoHandler(c, db)
-        })
-        guru.PATCH("/video/:video_id", func(c *gin.Context) {
-            controllers.PatchVideoByIDHandler(c, db)
-        })
-        guru.GET("/penilaian", func(c *gin.Context) {
-            controllers.GetPenilaianHandler(c, db)
-        })
-        guru.GET("/videos", func(c *gin.Context) {
-            controllers.GetAllVideoHandler(c, db)
-        })
-        guru.GET("/video/:id", func(c *gin.Context) {
-            controllers.GetVideoDetailHandler(c, db)
-        })
-        guru.GET("/video/:id/penilaian", func(c *gin.Context) {
-            controllers.GetPenilaianDetailHandler(c, db)
-        })
-    }
+	guru := r.Group("/guru")
+	guru.Use(middlewares.AuthMiddleware())
+	{
+		// Dummy: endpoint submit video
+		guru.POST("/video", func(c *gin.Context) {
+			controllers.SubmitVideoHandler(c, db)
+		})
+		guru.GET("/video", func(c *gin.Context) {
+			controllers.GetMyVideoHandler(c, db)
+		})
+		guru.PATCH("/video", func(c *gin.Context) {
+			controllers.PatchVideoHandler(c, db)
+		})
+		guru.PATCH("/video/:video_id", func(c *gin.Context) {
+			controllers.PatchVideoByIDHandler(c, db)
+		})
+		guru.GET("/penilaian", func(c *gin.Context) {
+			controllers.GetPenilaianHandler(c, db)
+		})
+		guru.GET("/videos", func(c *gin.Context) {
+			controllers.GetAllVideoHandler(c, db)
+		})
+		guru.GET("/video/:id", func(c *gin.Context) {
+			controllers.GetVideoDetailHandler(c, db)
+		})
+		guru.GET("/video/:id/penilaian", func(c *gin.Context) {
+			controllers.GetPenilaianDetailHandler(c, db)
+		})
+	}
 
-    r.GET("/me", middlewares.AuthMiddleware(), func(c *gin.Context) {
-        controllers.GetMeHandler(c, db)
-    })
+	r.GET("/me", middlewares.AuthMiddleware(), func(c *gin.Context) {
+		controllers.GetMeHandler(c, db)
+	})
 
-    r.POST("/auth/kepsek/login", func(c *gin.Context) {
-        controllers.KepsekLoginHandler(c, db)
-    })
+	r.POST("/auth/kepsek/login", func(c *gin.Context) {
+		controllers.KepsekLoginHandler(c, db)
+	})
 
-    r.GET("/auth/google/login", controllers.GoogleLogin)
-    r.GET("/auth/google/callback", func(c *gin.Context) {
-        controllers.GoogleCallback(c, db)
-    })
+	r.GET("/auth/google/login", controllers.GoogleLogin)
+	r.GET("/auth/google/callback", func(c *gin.Context) {
+		controllers.GoogleCallback(c, db)
+	})
 
-    kepsek := r.Group("/kepsek")
-    kepsek.Use(middlewares.AuthMiddleware())
-    {
-        kepsek.GET("/submissions", func(c *gin.Context) {
-            controllers.GetSubmissionsByKepsekHandler(c, db)
-        })
-        kepsek.POST("/nilai", func(c *gin.Context) {
-            controllers.PostPenilaianHandler(c, db)
-        })
-        kepsek.PATCH("/nilai/:video_id", func(c *gin.Context) {
-            controllers.PatchPenilaianHandler(c, db)
-        })
-    }
+	kepsek := r.Group("/kepsek")
+	kepsek.Use(middlewares.AuthMiddleware())
+	{
+		kepsek.GET("/submissions", func(c *gin.Context) {
+			controllers.GetSubmissionsByKepsekHandler(c, db)
+		})
+		kepsek.POST("/nilai", func(c *gin.Context) {
+			controllers.PostPenilaianHandler(c, db)
+		})
+		kepsek.PATCH("/nilai/:video_id", func(c *gin.Context) {
+			controllers.PatchPenilaianHandler(c, db)
+		})
+		kepsek.GET("/nilai/:video_id", func(c *gin.Context) {
+			controllers.GetPenilaianByVideoHandler(c, db)
+		})
+		kepsek.POST("/nilai/:video_id", func(c *gin.Context) {
+			controllers.PostPenilaianByVideoHandler(c, db)
+		})
+        kepsek.GET("/submission/:video_id", func(c *gin.Context) {
+	        controllers.GetSubmissionByIDHandler(c, db)
+})
+
+	}
 }

@@ -32,8 +32,8 @@ func GetSubmissionsByKepsekHandler(c *gin.Context, db *gorm.DB) {
 }
 
 type PenilaianRequest struct {
-	VideoID      uuid.UUID         `json:"video_id"`
-	SkorPerAspek map[string]int    `json:"skor_per_aspek"`
+	VideoID      uuid.UUID      `json:"video_id"`
+	SkorPerAspek map[string]int `json:"skor_per_aspek"`
 }
 
 type PenilaianRequestBaru struct {
@@ -117,5 +117,64 @@ func PatchPenilaianHandler(c *gin.Context, db *gorm.DB) {
 			"total_skor": penilaian.SkorTotal,
 			"label":      penilaian.Label,
 		},
+	})
+}
+
+func GetPenilaianByVideoHandler(c *gin.Context, db *gorm.DB) {
+	videoID, err := uuid.Parse(c.Param("video_id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "ID tidak valid"})
+		return
+	}
+
+	penilaian, err := services.GetPenilaianByVideoID(db, videoID)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Penilaian tidak ditemukan"})
+		return
+	}
+
+	c.JSON(200, gin.H{"message": "Data ditemukan", "data": penilaian})
+}
+
+func PostPenilaianByVideoHandler(c *gin.Context, db *gorm.DB) {
+	kepsekID := c.MustGet("userID").(uuid.UUID)
+	videoID, err := uuid.Parse(c.Param("video_id"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "ID tidak valid"})
+		return
+	}
+
+	var input dto.PenilaianRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(400, gin.H{"error": "Format tidak valid"})
+		return
+	}
+
+	penilaian, err := services.CreatePenilaianByVideoID(db, videoID, kepsekID, input)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(201, gin.H{"message": "Penilaian berhasil disimpan", "data": penilaian})
+}
+
+func GetSubmissionByIDHandler(c *gin.Context, db *gorm.DB) {
+	idStr := c.Param("video_id")
+	videoID, err := uuid.Parse(idStr)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "ID tidak valid"})
+		return
+	}
+
+	result, err := services.GetSubmissionByVideoID(db, videoID)
+	if err != nil {
+		c.JSON(404, gin.H{"error": "Data tidak ditemukan"})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"message": "Data ditemukan",
+		"data":    result,
 	})
 }
