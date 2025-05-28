@@ -37,6 +37,7 @@ func GetSubmissionsBySekolah(db *gorm.DB, sekolah string) ([]GuruSubmission, err
 		video_submissions.kelas_semester,
 		video_submissions.hari_tanggal,
 		video_submissions.updated_at,
+        COALESCE(penilaians.label, 'Menunggu untuk dinilai') as label,
 		CASE
 			WHEN penilaians.id IS NOT NULL THEN 'Sudah dinilai'
 			ELSE 'Menunggu untuk dinilai'
