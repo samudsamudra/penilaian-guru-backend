@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	password := "123456"
+	password := "jekingnigga"
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
 		panic(err)

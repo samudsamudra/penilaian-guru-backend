@@ -163,6 +163,28 @@ func KepsekLoginHandler(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
+    // Set cookie untuk token
+    c.SetCookie(
+        "token",
+        token,
+        3600,
+        "/",
+        "localhost",
+        false,
+        true,
+    )
+
+    // Set cookie untuk user ID
+    c.SetCookie(
+        "userID",
+        user.ID.String(),
+        3600,
+        "/",
+        "localhost",
+        false,
+        true,
+    )
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login kepsek berhasil",
 		"token":   token,
