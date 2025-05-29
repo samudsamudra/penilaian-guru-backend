@@ -22,6 +22,8 @@ type GuruSubmission struct {
 	UpdatedAt       string
 	StatusPenilaian string `json:"status_penilaian"`
 	Label           string `json:"label"`
+    Catatan         string `json:"catatan"`
+    Saran           string `json:"saran"`
 }
 
 func GetSubmissionsBySekolah(db *gorm.DB, sekolah string) ([]GuruSubmission, error) {
@@ -29,19 +31,24 @@ func GetSubmissionsBySekolah(db *gorm.DB, sekolah string) ([]GuruSubmission, err
 
 	err := db.Table("video_submissions").
 		Select(`
-		video_submissions.id as video_id,
-		users.name as guru_nama,
-		users.foto_profil,
-		video_submissions.link,
-		video_submissions.mata_pelajaran,
-		video_submissions.kelas_semester,
-		video_submissions.hari_tanggal,
-		video_submissions.updated_at,
-        COALESCE(penilaians.label, 'Menunggu untuk dinilai') as label,
-		CASE
-			WHEN penilaians.id IS NOT NULL THEN 'Sudah dinilai'
-			ELSE 'Menunggu untuk dinilai'
-		END as status_penilaian`).
+			video_submissions.id as video_id,
+			users.name as guru_nama,
+			users.foto_profil,
+			video_submissions.link,
+			video_submissions.mata_pelajaran,
+			video_submissions.kelas_semester,
+			video_submissions.hari_tanggal,
+			video_submissions.updated_at,
+
+			COALESCE(penilaians.label, 'Menunggu untuk dinilai') as label,
+			CASE
+				WHEN penilaians.id IS NOT NULL THEN 'Sudah dinilai'
+				ELSE 'Menunggu untuk dinilai'
+			END as status_penilaian,
+
+			penilaians.catatan,
+			penilaians.saran
+		`).
 		Joins("JOIN users ON users.id = video_submissions.guru_id").
 		Joins("LEFT JOIN penilaians ON penilaians.video_id = video_submissions.id").
 		Where("users.sekolah = ?", sekolah).
@@ -52,6 +59,7 @@ func GetSubmissionsBySekolah(db *gorm.DB, sekolah string) ([]GuruSubmission, err
 	}
 	return results, nil
 }
+
 
 func GetPenilaianByVideoID(db *gorm.DB, videoID uuid.UUID) (*models.Penilaian, error) {
 	var penilaian models.Penilaian
@@ -102,6 +110,8 @@ func GetSubmissionByVideoID(db *gorm.DB, videoID uuid.UUID) (*GuruSubmission, er
 			video_submissions.kelas_semester,
 			video_submissions.hari_tanggal,
 			video_submissions.updated_at,
+            video_submissions.catatan,
+            video_submissions.saran,
 			COALESCE(p.label, 'Menunggu untuk dinilai') as label`).
 		Joins("JOIN users ON users.id = video_submissions.guru_id").
 		Joins("LEFT JOIN penilaians p ON p.video_id = video_submissions.id").
